@@ -1,0 +1,232 @@
+﻿<Window x:Class="KaraokeLine.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:models="clr-namespace:KaraokeLine.Models"
+        mc:Ignorable="d" Height="800" Width="1024" ResizeMode="CanResize" WindowStartupLocation="CenterScreen"
+        DataContext="{Binding Path=MainWindowVm, Source={StaticResource Locator}}"
+        Title="{Binding Title}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="50" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Background="DodgerBlue">
+            <StackPanel HorizontalAlignment="Left" Margin="20 5 0 0">
+                <Label Content="Karaoke Line" FontSize="20" Foreground="White" />
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <!-- Controles -->
+            <Grid Grid.Column="0" Margin="20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <materialDesign:Card Grid.Row="0" Margin="10" Padding="5">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                            Text="Controles" Margin="0, 10" />
+                        <CheckBox Grid.Row="0" Grid.Column="1"
+                                  Style="{StaticResource MaterialDesignFilterChipAccentCheckBox}"
+                                  IsChecked="{Binding SessionStarted, Mode=OneWay}"
+                                  IsEnabled="False">
+                            Sessão On
+                        </CheckBox>
+                        <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0, 10" Width="250px"
+                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                Command="{Binding ProximoParticipanteComando}"
+                                IsEnabled="{Binding SessionStarted}"
+                                Content="Próximo participante" />
+                        <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="0, 10" Width="250px"
+                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                Command="{Binding ProximoTurnoComando}"
+                                IsEnabled="{Binding SessionStarted}"
+                                Content="Próxima rodada" />
+
+                    </Grid>
+                </materialDesign:Card>
+                <materialDesign:Card Grid.Row="1" Margin="10" Padding="5">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="50"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="Auto"></RowDefinition>
+                            <RowDefinition Height="80"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0"
+                                   Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                   Text="Criar participante" Margin="0, 10" />
+                        <TextBox Grid.Row="1"
+                                 materialDesign:HintAssist.Hint="Insira o nome do participante aqui">
+                            <TextBox.Text>
+                                <Binding
+                                    Path="EditSinger"
+                                    UpdateSourceTrigger="PropertyChanged"
+                                    Mode="TwoWay" />
+                            </TextBox.Text>
+                        </TextBox>
+                        <Button Grid.Row="2" 
+                                Margin="0, 10" Width="250px"
+                                Style="{StaticResource MaterialDesignRaisedButton}"
+                                Command="{Binding AdicionaParticipante}"
+                                IsEnabled="{Binding SessionStarted}"
+                                Content="Adicionar" />
+                        <TextBlock Grid.Row="3"
+                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                   Text="Participantes adicionados em uma rodada corrente, cantam e aguardam uma rodada conseguinte" TextWrapping="Wrap" />
+                    </Grid>
+                </materialDesign:Card>
+            </Grid>
+            <!-- Fila atual -->
+            <Grid Grid.Column="1" Margin="20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50" />
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Label Content="Fila atual" FontFamily="{materialDesign:MaterialDesignFont}" FontSize="14pt" />
+                <Grid Grid.Row="1" HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="0.4*" />
+                        <ColumnDefinition Width="0.3*" />
+                        <ColumnDefinition Width="0.3*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
+                               Text="Nome Participante"
+                               FontWeight="Bold" />
+                    <!-- <TextBlock Grid.Column="1" -->
+                    <!--            Text="Cantou" -->
+                    <!--            TextAlignment="Right" /> -->
+                    <!-- <TextBlock Grid.Column="2" -->
+                    <!--            Text="Posição global" -->
+                    <!--            TextAlignment="Right" /> -->
+                </Grid>
+                <ListView Grid.Row="2" Grid.ColumnSpan="3" HorizontalAlignment="Stretch"
+                          ItemsSource="{Binding Singers}">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Focusable" Value="False" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate DataType="{x:Type models:Singer}">
+                            <Border
+                                x:Name="Border"
+                                Padding="5"
+                                BorderThickness="0 0 0 1"
+                                BorderBrush="{DynamicResource MaterialDesignDivider}"
+                                HorizontalAlignment="Stretch">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="0.4*" />
+                                        <!-- <ColumnDefinition Width="0.3*" /> -->
+                                        <!-- <ColumnDefinition Width="0.3*" /> -->
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               Text="{Binding Name}"
+                                               FontWeight="Bold"
+                                               FontSize="14"
+                                               TextAlignment="Left" />
+                                    <!-- <TextBlock Grid.Column="1" -->
+                                    <!--            TextAlignment="Right" -->
+                                    <!--            Text="{Binding Path=TimesSang, StringFormat='\{0\} vez(es)'}"> -->
+                                    <!-- </TextBlock> -->
+                                    <!-- <TextBlock Grid.Column="2" -->
+                                    <!--            TextAlignment="Right" -->
+                                    <!--            Text="{Binding GlobalOrder}" /> -->
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+            <!-- Fila global -->
+            <Grid Grid.Column="2" Margin="20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50" />
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Label Content="Todos os participantes" FontFamily="{materialDesign:MaterialDesignFont}"
+                       FontSize="14pt" />
+                <Grid Grid.Row="1" HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="0.4*" />
+                        <ColumnDefinition Width="0.3*" />
+                        <ColumnDefinition Width="0.3*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
+                               Text="Nome Participante"
+                               FontWeight="Bold" />
+                    <TextBlock Grid.Column="1"
+                               Text="Cantou"
+                               TextAlignment="Right" />
+                    <TextBlock Grid.Column="2"
+                               Text="Posição global"
+                               TextAlignment="Right" />
+                </Grid>
+                <ListView Grid.Row="2" Grid.ColumnSpan="3" HorizontalAlignment="Stretch"
+                          ItemsSource="{Binding SessionSingers}">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Focusable" Value="False" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate DataType="{x:Type models:Singer}">
+                            <Border
+                                x:Name="Border"
+                                Padding="5"
+                                BorderThickness="0 0 0 1"
+                                BorderBrush="{DynamicResource MaterialDesignDivider}"
+                                HorizontalAlignment="Stretch">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="0.4*" />
+                                        <ColumnDefinition Width="0.3*" />
+                                        <ColumnDefinition Width="0.3*" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0"
+                                               Text="{Binding Name}"
+                                               FontWeight="Bold"
+                                               TextAlignment="Left" />
+                                    <TextBlock Grid.Column="1"
+                                               TextAlignment="Right"
+                                               Text="{Binding Path=TimesSang, StringFormat='\{0\} vez(es)'}" />
+                                    <TextBlock Grid.Column="2"
+                                               TextAlignment="Right"
+                                               Text="{Binding GlobalOrder}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </Grid>
+        <materialDesign:Snackbar Grid.Row="2"
+                                 Background="Brown"
+                                 MessageQueue="{Binding MessageQueue}" />
+    </Grid>
+</Window>
