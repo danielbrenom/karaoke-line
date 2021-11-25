@@ -5,9 +5,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:models="clr-namespace:KaraokeLine.Models"
-        mc:Ignorable="d" Height="800" Width="1024" ResizeMode="CanResize" WindowStartupLocation="CenterScreen"
+        mc:Ignorable="d" Height="1000" Width="1280" ResizeMode="CanResize" WindowStartupLocation="CenterScreen"
         DataContext="{Binding Path=MainWindowVm, Source={StaticResource Locator}}"
         Title="{Binding Title}">
+    <Window.Resources>
+    <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DialogHost.xaml" />
+        </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+        
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="50" />
@@ -19,10 +27,14 @@
                 <Label Content="Karaoke Line" FontSize="20" Foreground="White" />
             </StackPanel>
         </Grid>
+        <materialDesign:DialogHost Grid.Row="1"
+                                   DialogTheme="Inherit"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="300" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <!-- Controles -->
@@ -32,6 +44,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
+                <!-- Controles de proximo -->
                 <materialDesign:Card Grid.Row="0" Margin="10" Padding="5">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -65,13 +78,14 @@
 
                     </Grid>
                 </materialDesign:Card>
+                <!-- Criar participante -->
                 <materialDesign:Card Grid.Row="1" Margin="10" Padding="5">
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="50"></RowDefinition>
-                            <RowDefinition Height="Auto"></RowDefinition>
-                            <RowDefinition Height="Auto"></RowDefinition>
-                            <RowDefinition Height="80"></RowDefinition>
+                            <RowDefinition Height="50" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="80" />
                         </Grid.RowDefinitions>
                         <TextBlock Grid.Row="0"
                                    Style="{StaticResource MaterialDesignHeadline6TextBlock}"
@@ -85,15 +99,31 @@
                                     Mode="TwoWay" />
                             </TextBox.Text>
                         </TextBox>
-                        <Button Grid.Row="2" 
+                        <Button Grid.Row="2"
                                 Margin="0, 10" Width="250px"
                                 Style="{StaticResource MaterialDesignRaisedButton}"
                                 Command="{Binding AdicionaParticipante}"
                                 IsEnabled="{Binding SessionStarted}"
                                 Content="Adicionar" />
-                        <TextBlock Grid.Row="3"
+                    </Grid>
+                </materialDesign:Card>
+                <materialDesign:Card Grid.Row="2" Margin="10" Padding="5">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="50" />
+                            <RowDefinition Height="80" />
+                            <RowDefinition Height="80" />
+                            <RowDefinition Height="80" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0"
+                                   Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                   Text="Informações importantes" Margin="0, 10" />
+                        <TextBlock Grid.Row="1"
                                    Style="{StaticResource MaterialDesignBody2TextBlock}"
-                                   Text="Participantes adicionados em uma rodada corrente, cantam e aguardam uma rodada conseguinte" TextWrapping="Wrap" />
+                                   Text="- Participantes adicionados em uma rodada corrente, cantam e aguardam uma rodada conseguinte, por causa de sua prioridade" TextWrapping="Wrap" />
+                        <TextBlock Grid.Row="2"
+                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                   Text="- Você pode adicionar vários participantes de uma vez usando o caractere ';' entre os nomes dos participantes" TextWrapping="Wrap" />
                     </Grid>
                 </materialDesign:Card>
             </Grid>
@@ -107,19 +137,11 @@
                 <Label Content="Fila atual" FontFamily="{materialDesign:MaterialDesignFont}" FontSize="14pt" />
                 <Grid Grid.Row="1" HorizontalAlignment="Stretch">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="0.4*" />
-                        <ColumnDefinition Width="0.3*" />
-                        <ColumnDefinition Width="0.3*" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0"
                                Text="Nome Participante"
                                FontWeight="Bold" />
-                    <!-- <TextBlock Grid.Column="1" -->
-                    <!--            Text="Cantou" -->
-                    <!--            TextAlignment="Right" /> -->
-                    <!-- <TextBlock Grid.Column="2" -->
-                    <!--            Text="Posição global" -->
-                    <!--            TextAlignment="Right" /> -->
                 </Grid>
                 <ListView Grid.Row="2" Grid.ColumnSpan="3" HorizontalAlignment="Stretch"
                           ItemsSource="{Binding Singers}">
@@ -175,6 +197,7 @@
                         <ColumnDefinition Width="0.4*" />
                         <ColumnDefinition Width="0.3*" />
                         <ColumnDefinition Width="0.3*" />
+                        <ColumnDefinition Width="0.3*" />
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0"
                                Text="Nome Participante"
@@ -184,6 +207,9 @@
                                TextAlignment="Right" />
                     <TextBlock Grid.Column="2"
                                Text="Posição global"
+                               TextAlignment="Right" />
+                    <TextBlock Grid.Column="3"
+                               Text="Ignorar?"
                                TextAlignment="Right" />
                 </Grid>
                 <ListView Grid.Row="2" Grid.ColumnSpan="3" HorizontalAlignment="Stretch"
@@ -207,6 +233,7 @@
                                         <ColumnDefinition Width="0.4*" />
                                         <ColumnDefinition Width="0.3*" />
                                         <ColumnDefinition Width="0.3*" />
+                                        <ColumnDefinition Width="0.3*" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0"
                                                Text="{Binding Name}"
@@ -218,6 +245,11 @@
                                     <TextBlock Grid.Column="2"
                                                TextAlignment="Right"
                                                Text="{Binding GlobalOrder}" />
+                                    <ToggleButton Grid.Column="3"
+                                                  Content="X"
+                                                  Style="{StaticResource MaterialDesignActionLightToggleButton}"
+                                                  IsChecked="{Binding OptOut}"
+                                                  HorizontalAlignment="Right"/>
                                 </Grid>
                             </Border>
                         </DataTemplate>
@@ -228,5 +260,6 @@
         <materialDesign:Snackbar Grid.Row="2"
                                  Background="Brown"
                                  MessageQueue="{Binding MessageQueue}" />
+        
     </Grid>
 </Window>

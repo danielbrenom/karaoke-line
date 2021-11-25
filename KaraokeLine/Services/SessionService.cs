@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using KaraokeLine.Interfaces;
 using KaraokeLine.Models;
@@ -20,10 +24,10 @@ namespace KaraokeLine.Services
             {
                 var session = new KaraokeSession
                 {
-                    SessionId = System.Guid.NewGuid().ToString("N"),
+                    SessionId = Guid.NewGuid().ToString("N"),
                     RegisteredSingers = new List<Singer>()
                 };
-                Cache.AddUpdateCache(session.SessionId, session, System.TimeSpan.FromHours(1));
+                Cache.AddUpdateCache(session.SessionId, session, TimeSpan.FromHours(1));
                 return session;
             });
         }
@@ -37,9 +41,32 @@ namespace KaraokeLine.Services
         {
             return Task.Run(() =>
             {
-                Cache.AddUpdateCache(session.SessionId, session, System.TimeSpan.FromHours(1));
+                Cache.AddUpdateCache(session.SessionId, session, TimeSpan.FromHours(1));
                 return session;
             });
+        }
+
+        public async Task SaveSessionBackup(KaraokeSession session)
+        {
+            var sessionData = JsonSerializer.Serialize(session);
+            var folderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            await using var arquivo = File.Open(Path.Combine(folderPath, $"karaokeBackup{DateTime.Now:ddMMyyyy}.txt"), FileMode.OpenOrCreate);
+            await arquivo.WriteAsync(Encoding.UTF8.GetBytes(sessionData));
+        }
+
+        public async Task<KaraokeSession> LoadSessionBackup()
+        {
+            var folderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            await using var arquivo = File.Open(Path.Combine(folderPath, $"karaokeBackup{DateTime.Now:ddMMyyyy}.txt"), FileMode.OpenOrCreate);
+            using var reader = new StreamReader(arquivo);
+            var dados = await reader.ReadToEndAsync();
+            return JsonSerializer.Deserialize<KaraokeSession>(dados);
+        }
+
+        public bool ExistSessionBackup()
+        {
+            var folderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            return File.Exists(Path.Combine(folderPath, $"karaokeBackup{DateTime.Now:ddMMyyyy}.txt"));
         }
     }
 }

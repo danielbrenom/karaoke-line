@@ -7,5 +7,6 @@
         public int TimesSang { get; set; }
         public int GlobalOrder { get; set; }
         public bool Penalty { get; set; }
+        public bool OptOut { get; set; }
     }
 }

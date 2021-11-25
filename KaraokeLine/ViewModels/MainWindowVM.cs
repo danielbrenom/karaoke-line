@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using System.Windows.Input;
 using KaraokeLine.Architecture;
 using KaraokeLine.Interfaces;
 using KaraokeLine.Models;
+using KaraokeLine.Views;
 using MaterialDesignThemes.Wpf;
 
 namespace KaraokeLine.ViewModels
@@ -42,6 +44,28 @@ namespace KaraokeLine.ViewModels
             GameSession = await Service.InitializeSession();
             SessionStarted = true;
             NotificaProperiedade(nameof(SessionStarted));
+            if (Service.ExistSessionBackup())
+            {
+                try
+                {
+                    var dialog = new BackupDialog();
+                    var resultado = await DialogHost.Show(dialog);
+                    if (resultado is not true) return;
+                    var backup = await Service.LoadSessionBackup();
+                    if (backup is { } sessao)
+                    {
+                        GameSession.SessionId = sessao.SessionId;
+                        GameSession.CurrentIteration = sessao.CurrentIteration;
+                        CarregaParticipantes(sessao.RegisteredSingers);
+                    }
+                    else
+                        MostraMensagem("Erro ao carregar backup da sessão");
+                }
+                catch (System.Exception)
+                {
+                    MostraMensagem("Erro ao carregar backup da sessão");
+                }
+            }
         }
 
         private void CriaParticipante()
@@ -52,25 +76,30 @@ namespace KaraokeLine.ViewModels
                 return;
             }
 
-            if (Singers.Any(s => s.Name.ToLowerInvariant().Equals(EditSinger.ToLowerInvariant())))
-            {
-                MostraMensagem("Participante já existe");
-                return;
-            }
+            var possiveisParticipantes = EditSinger.Split(";");
 
-            var singer = new Singer
+            foreach (var participante in possiveisParticipantes)
             {
-                Name = EditSinger,
-                Id = System.Guid.NewGuid().ToString("N"),
-                GlobalOrder = GlobalCounter
-            };
-            if (GameSession.CurrentIteration > 1)
-                singer.Penalty = true;
-            Singers.Add(singer);
-            GameSession.RegisteredSingers.Add(singer);
-            EditSinger = string.Empty;
-            GlobalCounter++;
-            AtualizaListaGlobal();
+                if (Singers.Any(s => s.Name.ToLowerInvariant().Equals(participante.ToLowerInvariant())))
+                {
+                    MostraMensagem($"Participante {participante} já existe e será ignorado");
+                    continue;
+                }
+
+                var singer = new Singer
+                {
+                    Name = participante,
+                    Id = System.Guid.NewGuid().ToString("N"),
+                    GlobalOrder = GlobalCounter
+                };
+                if (GameSession.CurrentIteration > 1)
+                    singer.Penalty = true;
+                Singers.Add(singer);
+                GameSession.RegisteredSingers.Add(singer);
+                EditSinger = string.Empty;
+                GlobalCounter++;
+                AtualizaListaGlobal();
+            }
         }
 
         private void ProximoParticipante()
@@ -110,7 +139,7 @@ namespace KaraokeLine.ViewModels
             Singers.Clear();
             GameSession.CurrentIteration++;
             var cantoresDoTurno = GameSession.RegisteredSingers
-                                             .Where(cantores => cantores.TimesSang < GameSession.CurrentIteration)
+                                             .Where(cantores => cantores.TimesSang < GameSession.CurrentIteration && !cantores.OptOut)
                                              .ToList();
             var cantores = cantoresDoTurno.OrderBy(cantor => cantor.TimesSang)
                                            //.ThenByDescending(s => s.GlobalOrder)
@@ -122,6 +151,7 @@ namespace KaraokeLine.ViewModels
                 {
                     cantores.Remove(cantorPenalizado);
                 }
+
                 GameSession.RegisteredSingers.ForEach(c => c.Penalty = false);
             }
 
@@ -129,11 +159,31 @@ namespace KaraokeLine.ViewModels
             cantores.ForEach(Singers.Add);
         }
 
+        private void CarregaParticipantes(List<Singer> participantes)
+        {
+            foreach (var participante in participantes)
+            {
+                if (Singers.Any(s => s.Name.ToLowerInvariant().Equals(participante.Name.ToLowerInvariant())))
+                {
+                    MostraMensagem($"Participante {participante.Name} já existe e será ignorado");
+                    continue;
+                }
+                if (GameSession.CurrentIteration > 1)
+                    participante.Penalty = true;
+                Singers.Add(participante);
+                GameSession.RegisteredSingers.Add(participante);
+                EditSinger = string.Empty;
+                GlobalCounter++;
+                AtualizaListaGlobal();
+            }
+        }
+
         private void AtualizaListaGlobal()
         {
             SessionSingers.Clear();
             GameSession.RegisteredSingers.ForEach(SessionSingers.Add);
             Service.UpdateSession(GameSession);
+            Service.SaveSessionBackup(GameSession);
         }
 
         private void MostraMensagem(string mensagem)

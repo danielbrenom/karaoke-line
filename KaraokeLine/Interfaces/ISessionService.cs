@@ -8,6 +8,9 @@ namespace KaraokeLine.Interfaces
         public Task<KaraokeSession> InitializeSession();
         public Task<KaraokeSession> RetrieveSession(string sessionId);
         public Task<KaraokeSession> UpdateSession(KaraokeSession session);
+        public Task SaveSessionBackup(KaraokeSession session);
+        public Task<KaraokeSession> LoadSessionBackup();
+        public bool ExistSessionBackup();
 
     }
 }
